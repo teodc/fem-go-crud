@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -9,15 +11,19 @@ import (
 )
 
 func main() {
+	var port int
+	flag.IntVar(&port, "port", 8080, "port to listen on")
+	flag.Parse()
+
 	myApp, err := app.New()
 	if err != nil {
 		panic(err)
 	}
 
-	myApp.Logger.Println("Application started")
+	myApp.Logger.Printf("Server started on port %d", port)
 
 	server := http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%d", port),
 		Handler:      nil,
 		ErrorLog:     myApp.Logger,
 		ReadTimeout:  10 * time.Second,
