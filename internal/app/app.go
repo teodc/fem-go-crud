@@ -2,6 +2,7 @@ package app
 
 import (
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -17,4 +18,12 @@ func New() (*App, error) {
 	}
 
 	return app, nil
+}
+
+func (a *App) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte("I'm alive!"))
+	if err != nil {
+		log.Fatal(err)
+	}
 }

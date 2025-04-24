@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fem-go-crud/internal/routes"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -24,24 +24,14 @@ func main() {
 
 	server := http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
-		Handler:      nil,
+		Handler:      routes.MakeRouter(myApp),
 		ErrorLog:     myApp.Logger,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 20 * time.Second,
 		IdleTimeout:  time.Minute,
 	}
 
-	http.HandleFunc("/poke", HealthCheck)
-
 	if err := server.ListenAndServe(); err != nil {
 		myApp.Logger.Fatal(err)
-	}
-}
-
-func HealthCheck(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	_, err := w.Write([]byte("I'm alive!"))
-	if err != nil {
-		log.Fatal(err)
 	}
 }
