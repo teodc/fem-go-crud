@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fem-go-crud/internal/routes"
 	"flag"
 	"fmt"
 	"net/http"
 	"time"
+
+	"fem-go-crud/internal/routes"
 
 	"fem-go-crud/internal/app"
 )

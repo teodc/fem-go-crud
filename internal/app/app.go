@@ -4,17 +4,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"fem-go-crud/internal/api"
 )
 
 type App struct {
-	Logger *log.Logger
+	Logger         *log.Logger
+	WorkoutHandler *api.WorkoutHandler
 }
 
 func New() (*App, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile)
 
+	workoutHandler := api.NewWorkoutHandler()
+
 	app := &App{
-		Logger: logger,
+		Logger:         logger,
+		WorkoutHandler: workoutHandler,
 	}
 
 	return app, nil
