@@ -1,17 +1,23 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
 	"time"
 
-	"fem-go-crud/internal/routes"
+	"github.com/joho/godotenv"
 
 	"fem-go-crud/internal/app"
+	"fem-go-crud/internal/routes"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 	var port int
 	flag.IntVar(&port, "port", 8080, "port to listen on")
 	flag.Parse()
@@ -20,6 +26,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	defer func(DB *sql.DB) {
+		err := DB.Close()
+		if err != nil {
+		}
+	}(myApp.DB)
 
 	myApp.Logger.Printf("Server started on port %d", port)
 

@@ -3,12 +3,12 @@
 run:
 	@echo ">>> running app ..."
 	@go run main.go
-	@echo ">>> done"
+	@echo ">>> ... done"
 
 build:
 	@echo ">>> building app ..."
 	go build -o fem-go-crud
-	@echo ">>> done"
+	@echo ">>> ... done"
 
 lint: lint-fp lint-tp
 
@@ -17,7 +17,7 @@ lint-fp:
 	@echo ">>> running first-party linters ..."
 	@go fmt ./...
 	@go vet ./...
-	@echo ">>> done"
+	@echo ">>> ... done"
 
 # third-party linters
 lint-tp:
@@ -25,4 +25,9 @@ lint-tp:
 	@go tool gofumpt -w .
 	@go tool errcheck ./...
 	@go tool staticcheck ./...
-	@echo ">>> done"
+	@echo ">>> ... done"
+
+docker:
+	@echo ">>> starting docker ..."
+	@docker compose up --build
+	@echo ">>> ... done"

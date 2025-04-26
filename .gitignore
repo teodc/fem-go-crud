@@ -4,3 +4,4 @@
 .env.*
 !.env.sample
 !go.sum
+/var
