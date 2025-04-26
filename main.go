@@ -28,9 +28,7 @@ func main() {
 	}
 
 	defer func(DB *sql.DB) {
-		err := DB.Close()
-		if err != nil {
-		}
+		_ = DB.Close()
 	}(myApp.DB)
 
 	myApp.Logger.Printf("Server started on port %d", port)

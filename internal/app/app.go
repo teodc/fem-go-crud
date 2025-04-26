@@ -30,7 +30,8 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	workoutHandler := api.NewWorkoutHandler()
+	workoutStore := store.NewPostgresWorkoutStore(db)
+	workoutHandler := api.NewWorkoutHandler(workoutStore)
 
 	app := &App{
 		Logger:         logger,
