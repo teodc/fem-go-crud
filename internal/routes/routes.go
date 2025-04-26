@@ -11,6 +11,7 @@ func MakeRouter(app *app.App) (r *chi.Mux) {
 	r.Get("/poke", app.HealthCheck)
 	r.Get("/workouts/{workoutId}", app.WorkoutHandler.GetWorkoutById)
 	r.Post("/workouts", app.WorkoutHandler.CreateWorkout)
+	r.Put("/workouts/{workoutId}", app.WorkoutHandler.UpdateWorkout)
 
 	return
 }
