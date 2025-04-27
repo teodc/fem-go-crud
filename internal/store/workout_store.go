@@ -27,8 +27,9 @@ type WorkoutExercise struct {
 
 type WorkoutStore interface {
 	PersistWorkout(workout *Workout) (*Workout, error)
-	FetchWorkout(id int) (*Workout, error)
+	GetWorkout(id int64) (*Workout, error)
 	UpdateWorkout(workout *Workout) error
+	DeleteWorkout(id int64) error
 }
 
 type PostgresWorkoutStore struct {
@@ -83,7 +84,7 @@ func (pws *PostgresWorkoutStore) PersistWorkout(workout *Workout) (*Workout, err
 	return workout, nil
 }
 
-func (pws *PostgresWorkoutStore) FetchWorkout(id int) (*Workout, error) {
+func (pws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
 	workout := &Workout{}
 
 	workoutQuery := `
@@ -178,4 +179,24 @@ func (pws *PostgresWorkoutStore) UpdateWorkout(workout *Workout) error {
 	}
 
 	return tx.Commit()
+}
+
+func (pws *PostgresWorkoutStore) DeleteWorkout(id int64) error {
+	query := `DELETE FROM workouts WHERE id = $1`
+
+	result, err := pws.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

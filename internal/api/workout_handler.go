@@ -1,7 +1,9 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -21,7 +23,7 @@ func NewWorkoutHandler(ws store.WorkoutStore) *WorkoutHandler {
 	}
 }
 
-func (wh *WorkoutHandler) GetWorkoutById(w http.ResponseWriter, r *http.Request) {
+func (wh *WorkoutHandler) GetWorkout(w http.ResponseWriter, r *http.Request) {
 	workoutIDParam := chi.URLParam(r, "workoutId")
 	if workoutIDParam == "" {
 		http.Error(w, "missing workoutId query param", http.StatusBadRequest)
@@ -34,7 +36,7 @@ func (wh *WorkoutHandler) GetWorkoutById(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	workout, err := wh.workoutStore.FetchWorkout(int(workoutID))
+	workout, err := wh.workoutStore.GetWorkout(workoutID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to retrieve workout %d: %s", workoutID, err.Error()), http.StatusInternalServerError)
 		return
@@ -91,7 +93,7 @@ func (wh *WorkoutHandler) UpdateWorkout(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	existingWorkout, err := wh.workoutStore.FetchWorkout(int(workoutID))
+	existingWorkout, err := wh.workoutStore.GetWorkout(workoutID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to retrieve workout %d: %s", workoutID, err.Error()), http.StatusInternalServerError)
 		return
@@ -141,6 +143,38 @@ func (wh *WorkoutHandler) UpdateWorkout(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(existingWorkout)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to write response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (wh *WorkoutHandler) DeleteWorkout(w http.ResponseWriter, r *http.Request) {
+	workoutIDParam := chi.URLParam(r, "workoutId")
+	if workoutIDParam == "" {
+		http.Error(w, "missing workoutId query param", http.StatusBadRequest)
+		return
+	}
+
+	workoutID, err := strconv.ParseInt(workoutIDParam, 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to parse workoutId %s: %s", workoutIDParam, err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	err = wh.workoutStore.DeleteWorkout(workoutID)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, fmt.Sprintf("workout %d not found", workoutID), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to delete workout: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(nil)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to write response: %s", err.Error()), http.StatusInternalServerError)
 		return
