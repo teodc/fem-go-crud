@@ -63,7 +63,10 @@ func (pws *PostgresWorkoutStore) PersistWorkout(workout *Workout) (*Workout, err
 		return nil, err
 	}
 
-	for _, exercise := range workout.Exercises {
+	for i := range workout.Exercises {
+		// Why?
+		exercise := &workout.Exercises[i]
+
 		query := `
 			INSERT INTO workout_exercises (workout_id, name, sets, reps, duration_seconds, weight, notes, order_index)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -165,14 +168,16 @@ func (pws *PostgresWorkoutStore) UpdateWorkout(workout *Workout) error {
 		return err
 	}
 
-	for _, exercises := range workout.Exercises {
+	for i := range workout.Exercises {
+		exercise := &workout.Exercises[i]
+
 		query := `
 			INSERT INTO workout_exercises (workout_id, name, sets, reps, duration_seconds, weight, notes, order_index)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 			RETURNING id
 		`
 
-		err = tx.QueryRow(query, workout.ID, exercises.Name, exercises.Sets, exercises.Reps, exercises.DurationSeconds, exercises.Weight, exercises.Notes, exercises.OrderIndex).Scan(&exercises.ID)
+		err = tx.QueryRow(query, workout.ID, exercise.Name, exercise.Sets, exercise.Reps, exercise.DurationSeconds, exercise.Weight, exercise.Notes, exercise.OrderIndex).Scan(&exercise.ID)
 		if err != nil {
 			return err
 		}

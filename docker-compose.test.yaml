@@ -1,13 +1,13 @@
 services:
-    postgres:
-        container_name: "fem-go-crud-db"
+    postgres_test:
+        container_name: "fem-go-crud-db-test"
         image: postgres:17-alpine
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
-            POSTGRES_DB: fem-go-crud
+            POSTGRES_DB: fem-go-crud-test
         ports:
-            - "5432:5432"
+            - "5433:5432"
         volumes:
-            - "./var/postgres_data:/var/lib/postgresql/data:rw"
+            - "./var/postgres_test_data:/var/lib/postgresql/data:rw"
         restart: unless-stopped

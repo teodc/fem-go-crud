@@ -27,7 +27,17 @@ lint-tp:
 	@go tool staticcheck ./...
 	@echo ">>> ... done"
 
+test:
+	@echo ">>> testing ..."
+	@go test ./...
+	@echo ">>> ... done"
+
 docker:
 	@echo ">>> starting docker ..."
-	@docker compose up --build
+	@docker compose up --build --force-recreate
+	@echo ">>> ... done"
+
+docker-test:
+	@echo ">>> starting docker for tests ..."
+	@docker compose -f docker-compose.test.yaml up --build --force-recreate
 	@echo ">>> ... done"
