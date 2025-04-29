@@ -32,6 +32,9 @@ type WorkoutStore interface {
 	DeleteWorkout(id int64) error
 }
 
+// Explicitly implement the interface
+var _ WorkoutStore = (*PostgresWorkoutStore)(nil)
+
 type PostgresWorkoutStore struct {
 	db *sql.DB
 }
