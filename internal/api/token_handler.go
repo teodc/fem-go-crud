@@ -35,46 +35,46 @@ func (th *TokenHandler) CreateToken(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		th.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "invalid payload"})
+		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "bad request"})
 		return
 	}
 
 	user, err := th.userStore.GetUserByIdOrUsername(0, payload.Username)
 	if err != nil {
 		th.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to retrieve user"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 	if user == nil {
 		th.logger.Printf("ERROR: user %s not found", payload.Username)
-		_ = utils.WriteJSONResponse(w, http.StatusNotFound, utils.Envelope{"error": "user not found"})
+		_ = utils.WriteJSONResponse(w, http.StatusNotFound, utils.Envelope{"error": "failed"})
 		return
 	}
 
 	passwordMatches, err := user.Password.Matches(payload.Password)
 	if err != nil {
 		th.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to create token"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 
 	if !passwordMatches {
 		th.logger.Printf("ERROR: invalid password for user %s", payload.Username)
-		_ = utils.WriteJSONResponse(w, http.StatusUnauthorized, utils.Envelope{"error": "invalid password"})
+		_ = utils.WriteJSONResponse(w, http.StatusUnauthorized, utils.Envelope{"error": "unauthorized"})
 		return
 	}
 
 	newToken, err := auth.MakeToken(user.ID, auth.TokenTTL, auth.TokenScopeAuth)
 	if err != nil {
 		th.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to create token"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 
 	err = th.tokenStore.PersistToken(newToken)
 	if err != nil {
 		th.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to create token"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 

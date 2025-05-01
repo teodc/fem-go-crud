@@ -15,12 +15,12 @@ const (
 type Token struct {
 	Plain     string    `json:"token"`
 	Hash      []byte    `json:"-"`
-	UserID    int64     `json:"-"`
+	UserID    int       `json:"-"`
 	ExpiresAt time.Time `json:"expires_at"`
 	Scope     string    `json:"-"`
 }
 
-func MakeToken(userID int64, ttl time.Duration, scope string) (*Token, error) {
+func MakeToken(userID int, ttl time.Duration, scope string) (*Token, error) {
 	token := &Token{
 		UserID:    userID,
 		ExpiresAt: time.Now().Add(ttl),

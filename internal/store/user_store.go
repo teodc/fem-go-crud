@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	ID        int64         `json:"id"`
+	ID        int           `json:"id"`
 	Username  string        `json:"username"`
 	Email     string        `json:"email"`
 	Password  auth.Password `json:"-"`
@@ -27,7 +27,7 @@ func (u *User) IsAnonymous() bool {
 
 type UserStore interface {
 	PersistUser(user *User) error
-	GetUserByIdOrUsername(id int64, username string) (*User, error)
+	GetUserByIdOrUsername(id int, username string) (*User, error)
 	UpdateUser(user *User) error
 	GetUserFromToken(token, scope string) (*User, error)
 }
@@ -63,7 +63,7 @@ func (us *PostgresUserStore) PersistUser(user *User) error {
 	return nil
 }
 
-func (us *PostgresUserStore) GetUserByIdOrUsername(id int64, username string) (*User, error) {
+func (us *PostgresUserStore) GetUserByIdOrUsername(id int, username string) (*User, error) {
 	var targetField string
 	var targetValue any
 

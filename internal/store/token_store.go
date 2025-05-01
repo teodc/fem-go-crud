@@ -8,7 +8,7 @@ import (
 
 type TokenStore interface {
 	PersistToken(token *auth.Token) error
-	RevokeTokensForUser(userID int64, scope string) error
+	RevokeTokensForUser(userID int, scope string) error
 }
 
 var _ TokenStore = (*PostgresTokenStore)(nil)
@@ -37,7 +37,7 @@ func (ts *PostgresTokenStore) PersistToken(token *auth.Token) error {
 	return nil
 }
 
-func (ts *PostgresTokenStore) RevokeTokensForUser(userID int64, scope string) error {
+func (ts *PostgresTokenStore) RevokeTokensForUser(userID int, scope string) error {
 	query := `
 		DELETE FROM tokens
 		WHERE user_id = $1 AND scope = $2

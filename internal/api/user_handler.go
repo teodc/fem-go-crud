@@ -71,7 +71,7 @@ func (uh *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		uh.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "invalid payload"})
+		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "bad request"})
 		return
 	}
 
@@ -89,14 +89,14 @@ func (uh *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	err = user.Password.Set(payload.Password)
 	if err != nil {
 		uh.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to persist resource"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 
 	err = uh.userStore.PersistUser(&user)
 	if err != nil {
 		uh.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to persist resource"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 
@@ -107,19 +107,19 @@ func (uh *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.ParseIDParamFromURL(r, "userId")
 	if err != nil {
 		uh.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "invalid ID param"})
+		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "bad request"})
 	}
 
 	user, err := uh.userStore.GetUserByIdOrUsername(userID, "")
 	if err != nil {
 		uh.logger.Printf("ERROR: %v", err)
-		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to retrieve resource"})
+		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed"})
 		return
 	}
 
 	if user == nil {
 		uh.logger.Printf("ERROR: user %d not found", userID)
-		_ = utils.WriteJSONResponse(w, http.StatusNotFound, utils.Envelope{"error": "resource not found"})
+		_ = utils.WriteJSONResponse(w, http.StatusNotFound, utils.Envelope{"error": "not found"})
 		return
 	}
 

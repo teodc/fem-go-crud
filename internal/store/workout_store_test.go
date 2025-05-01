@@ -124,7 +124,7 @@ func TestPersistWorkout(t *testing.T) {
 				assert.Equal(t, tc.workout.Exercises[i].OrderIndex, (&tc.workout.Exercises[i]).OrderIndex)
 			}
 
-			retrievedWorkout, err := store.GetWorkout(int64(tc.workout.ID))
+			retrievedWorkout, err := store.GetWorkout(int(tc.workout.ID))
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.workout.ID, retrievedWorkout.ID)

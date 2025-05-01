@@ -7,6 +7,7 @@ import (
 
 type Workout struct {
 	ID              int               `json:"id"`
+	UserID          int               `json:"user_id"`
 	Name            string            `json:"name"`
 	Description     string            `json:"description"`
 	DurationMinutes int               `json:"duration_minutes"`
@@ -27,9 +28,10 @@ type WorkoutExercise struct {
 
 type WorkoutStore interface {
 	PersistWorkout(workout *Workout) error
-	GetWorkout(id int64) (*Workout, error)
+	GetWorkout(id int) (*Workout, error)
 	UpdateWorkout(workout *Workout) error
-	DeleteWorkout(id int64) error
+	DeleteWorkout(id int) error
+	GetWorkoutOwner(id int) (int, error)
 }
 
 var _ WorkoutStore = (*PostgresWorkoutStore)(nil)
@@ -55,12 +57,12 @@ func (ws *PostgresWorkoutStore) PersistWorkout(workout *Workout) error {
 	}(tx)
 
 	query := `
-		INSERT INTO workouts (name, description, duration_minutes, calories_burned)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO workouts (user_id, name, description, duration_minutes, calories_burned)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id
 	`
 
-	err = tx.QueryRow(query, workout.Name, workout.Description, workout.DurationMinutes, workout.CaloriesBurned).Scan(&workout.ID)
+	err = tx.QueryRow(query, workout.UserID, workout.Name, workout.Description, workout.DurationMinutes, workout.CaloriesBurned).Scan(&workout.ID)
 	if err != nil {
 		return err
 	}
@@ -89,7 +91,7 @@ func (ws *PostgresWorkoutStore) PersistWorkout(workout *Workout) error {
 	return nil
 }
 
-func (ws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
+func (ws *PostgresWorkoutStore) GetWorkout(id int) (*Workout, error) {
 	workout := &Workout{}
 
 	workoutQuery := `
@@ -194,7 +196,7 @@ func (ws *PostgresWorkoutStore) UpdateWorkout(workout *Workout) error {
 	return tx.Commit()
 }
 
-func (ws *PostgresWorkoutStore) DeleteWorkout(id int64) error {
+func (ws *PostgresWorkoutStore) DeleteWorkout(id int) error {
 	query := `DELETE FROM workouts WHERE id = $1`
 
 	result, err := ws.db.Exec(query, id)
@@ -212,4 +214,17 @@ func (ws *PostgresWorkoutStore) DeleteWorkout(id int64) error {
 	}
 
 	return nil
+}
+
+func (ws *PostgresWorkoutStore) GetWorkoutOwner(id int) (int, error) {
+	var userID int
+
+	query := `SELECT user_id FROM workouts WHERE id = $1`
+
+	err := ws.db.QueryRow(query, id).Scan(&userID)
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
 }

@@ -28,7 +28,7 @@ func WriteJSONResponse(w http.ResponseWriter, status int, data Envelope) error {
 	return nil
 }
 
-func ParseIDParamFromURL(r *http.Request, paramName string) (int64, error) {
+func ParseIDParamFromURL(r *http.Request, paramName string) (int, error) {
 	idParam := chi.URLParam(r, paramName)
 	if idParam == "" {
 		return 0, errors.New("missing param")
@@ -38,5 +38,5 @@ func ParseIDParamFromURL(r *http.Request, paramName string) (int64, error) {
 		return 0, errors.New("invalid param")
 	}
 
-	return id, nil
+	return int(id), nil
 }
