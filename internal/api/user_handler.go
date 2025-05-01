@@ -11,12 +11,6 @@ import (
 	"fem-go-crud/internal/utils"
 )
 
-type registerUserPayload struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type UserHandler struct {
 	userStore store.UserStore
 	logger    *log.Logger
@@ -27,6 +21,12 @@ func NewUserHandler(us store.UserStore, l *log.Logger) *UserHandler {
 		userStore: us,
 		logger:    l,
 	}
+}
+
+type registerUserPayload struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (uh *UserHandler) validateRegisterUserPayload(payload *registerUserPayload) error {
@@ -110,7 +110,7 @@ func (uh *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		_ = utils.WriteJSONResponse(w, http.StatusBadRequest, utils.Envelope{"error": "invalid ID param"})
 	}
 
-	user, err := uh.userStore.GetUser(userID)
+	user, err := uh.userStore.GetUserByIdOrUsername(userID, "")
 	if err != nil {
 		uh.logger.Printf("ERROR: %v", err)
 		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to retrieve resource"})

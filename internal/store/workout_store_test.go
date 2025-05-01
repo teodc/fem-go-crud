@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: move to utils
 func setupTestDB(t *testing.T) *sql.DB {
 	if err := godotenv.Load("../../.env.test"); err != nil {
 		panic(err)

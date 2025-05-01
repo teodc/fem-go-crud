@@ -1,7 +1,7 @@
 .DS_Store
 /.idea
-.env
 .env.*
-!.env.sample
+!.env
+!.env.test
 !go.sum
 /var

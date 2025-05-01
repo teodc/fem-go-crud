@@ -1,3 +1,6 @@
+#!make
+-include .env
+
 .PHONY: *
 
 run:
@@ -40,4 +43,15 @@ docker:
 docker-test:
 	@echo ">>> starting docker for tests ..."
 	@docker compose -f docker-compose.test.yaml up --build --force-recreate
+	@echo ">>> ... done"
+
+migrate-up:
+	@echo ">>> running migrate up ..."
+	@go tool goose -- -dir database/migrations postgres "${DATABASE_URL}" up
+	@echo ">>> ... done"
+
+migrate-reset:
+	@echo ">>> running migrate reset ..."
+	@go tool goose -- down-to 0
+	@go tool goose -- -dir database/migrations postgres "${DATABASE_URL}" up
 	@echo ">>> ... done"

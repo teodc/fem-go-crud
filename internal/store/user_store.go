@@ -3,12 +3,13 @@ package store
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"fem-go-crud/internal/auth"
 )
 
 type User struct {
-	ID        int           `json:"id"`
+	ID        int64         `json:"id"`
 	Username  string        `json:"username"`
 	Email     string        `json:"email"`
 	Password  auth.Password `json:"-"`
@@ -18,7 +19,7 @@ type User struct {
 
 type UserStore interface {
 	PersistUser(user *User) error
-	GetUser(id int64) (*User, error)
+	GetUserByIdOrUsername(id int64, username string) (*User, error)
 	UpdateUser(user *User) error
 }
 
@@ -53,7 +54,20 @@ func (us *PostgresUserStore) PersistUser(user *User) error {
 	return nil
 }
 
-func (us *PostgresUserStore) GetUser(id int64) (*User, error) {
+func (us *PostgresUserStore) GetUserByIdOrUsername(id int64, username string) (*User, error) {
+	var targetField string
+	var targetValue any
+
+	if id != 0 {
+		targetField = "id"
+		targetValue = id
+	} else if username != "" {
+		targetField = "username"
+		targetValue = username
+	} else {
+		return nil, errors.New("missing id or username")
+	}
+
 	user := &User{
 		Password: auth.Password{},
 	}
@@ -61,10 +75,10 @@ func (us *PostgresUserStore) GetUser(id int64) (*User, error) {
 	query := `
 		SELECT id, username, email, password_hash, created_at, updated_at
 		FROM users
-		WHERE id = $1
+		WHERE %s = $1
 	`
 
-	err := us.db.QueryRow(query, id).Scan(
+	err := us.db.QueryRow(fmt.Sprintf(query, targetField), fmt.Sprintf("%v", targetValue)).Scan(
 		&user.ID,
 		&user.Username,
 		&user.Email,
