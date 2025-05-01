@@ -66,7 +66,7 @@ func (ws *PostgresWorkoutStore) PersistWorkout(workout *Workout) error {
 	}
 
 	for i := range workout.Exercises {
-		// Why?
+		// Question: Why do we need that?
 		exercise := &workout.Exercises[i]
 
 		query := `

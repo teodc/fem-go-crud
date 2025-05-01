@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"fem-go-crud/internal/auth"
 )
@@ -17,10 +18,18 @@ type User struct {
 	UpdatedAt string        `json:"updated_at"`
 }
 
+var AnonymousUser = &User{}
+
+func (u *User) IsAnonymous() bool {
+	// Question: Is this comparing 2 pointer addresses? Or both structs' values?
+	return u == AnonymousUser
+}
+
 type UserStore interface {
 	PersistUser(user *User) error
 	GetUserByIdOrUsername(id int64, username string) (*User, error)
 	UpdateUser(user *User) error
+	GetUserFromToken(token, scope string) (*User, error)
 }
 
 var _ UserStore = (*PostgresUserStore)(nil)
@@ -119,4 +128,35 @@ func (us *PostgresUserStore) UpdateUser(user *User) error {
 	}
 
 	return nil
+}
+
+func (us *PostgresUserStore) GetUserFromToken(plainToken, scope string) (*User, error) {
+	query := `
+		SELECT u.id, u.username, u.email, u.created_at, u.updated_at
+		FROM users u
+		INNER JOIN tokens t ON u.id = t.user_id
+		WHERE t.hash = $1 AND t.scope = $2 AND t.expires_at > $3
+	`
+
+	tokenHash := auth.MakeTokenHash(plainToken)
+
+	user := &User{
+		Password: auth.Password{},
+	}
+
+	err := us.db.QueryRow(query, tokenHash, scope, time.Now()).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

@@ -1,5 +1,5 @@
 #!make
--include .env
+-include .env.local
 
 .PHONY: *
 
@@ -18,6 +18,7 @@ lint: lint-fp lint-tp
 # first-party linters
 lint-fp:
 	@echo ">>> running first-party linters ..."
+	@go mod tidy
 	@go fmt ./...
 	@go vet ./...
 	@echo ">>> ... done"

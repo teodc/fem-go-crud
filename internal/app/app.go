@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"fem-go-crud/internal/middleware"
+
 	"fem-go-crud/database/migrations"
 	"fem-go-crud/internal/api"
 	"fem-go-crud/internal/store"
@@ -15,6 +17,7 @@ type App struct {
 	Logger         *log.Logger
 	DB             *sql.DB
 	UserHandler    *api.UserHandler
+	UserMiddleware *middleware.UserMiddleware
 	TokenHandler   *api.TokenHandler
 	WorkoutHandler *api.WorkoutHandler
 }
@@ -34,6 +37,7 @@ func New() (*App, error) {
 
 	userStore := store.NewPostgresUserStore(db)
 	userHandler := api.NewUserHandler(userStore, logger)
+	userMiddleware := middleware.NewUserMiddleware(userStore)
 
 	tokenStore := store.NewPostgresTokenStore(db)
 	tokenHandler := api.NewTokenHandler(tokenStore, userStore, logger)
@@ -45,6 +49,7 @@ func New() (*App, error) {
 		Logger:         logger,
 		DB:             db,
 		UserHandler:    userHandler,
+		UserMiddleware: userMiddleware,
 		TokenHandler:   tokenHandler,
 		WorkoutHandler: workoutHandler,
 	}
