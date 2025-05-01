@@ -57,14 +57,14 @@ func (wh *WorkoutHandler) CreateWorkout(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	createdWorkout, err := wh.workoutStore.PersistWorkout(&workout)
+	err = wh.workoutStore.PersistWorkout(&workout)
 	if err != nil {
 		wh.logger.Printf("ERROR: %v", err)
 		_ = utils.WriteJSONResponse(w, http.StatusInternalServerError, utils.Envelope{"error": "failed to persist resource"})
 		return
 	}
 
-	_ = utils.WriteJSONResponse(w, http.StatusCreated, utils.Envelope{"workout": createdWorkout})
+	_ = utils.WriteJSONResponse(w, http.StatusCreated, utils.Envelope{"workout": workout})
 }
 
 func (wh *WorkoutHandler) UpdateWorkout(w http.ResponseWriter, r *http.Request) {

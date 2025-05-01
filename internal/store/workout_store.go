@@ -26,13 +26,12 @@ type WorkoutExercise struct {
 }
 
 type WorkoutStore interface {
-	PersistWorkout(workout *Workout) (*Workout, error)
+	PersistWorkout(workout *Workout) error
 	GetWorkout(id int64) (*Workout, error)
 	UpdateWorkout(workout *Workout) error
 	DeleteWorkout(id int64) error
 }
 
-// Explicitly implement the interface
 var _ WorkoutStore = (*PostgresWorkoutStore)(nil)
 
 type PostgresWorkoutStore struct {
@@ -45,10 +44,10 @@ func NewPostgresWorkoutStore(db *sql.DB) *PostgresWorkoutStore {
 	}
 }
 
-func (pws *PostgresWorkoutStore) PersistWorkout(workout *Workout) (*Workout, error) {
-	tx, err := pws.db.Begin()
+func (ws *PostgresWorkoutStore) PersistWorkout(workout *Workout) error {
+	tx, err := ws.db.Begin()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer func(tx *sql.Tx) {
@@ -63,7 +62,7 @@ func (pws *PostgresWorkoutStore) PersistWorkout(workout *Workout) (*Workout, err
 
 	err = tx.QueryRow(query, workout.Name, workout.Description, workout.DurationMinutes, workout.CaloriesBurned).Scan(&workout.ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for i := range workout.Exercises {
@@ -78,19 +77,19 @@ func (pws *PostgresWorkoutStore) PersistWorkout(workout *Workout) (*Workout, err
 
 		err = tx.QueryRow(query, workout.ID, exercise.Name, exercise.Sets, exercise.Reps, exercise.DurationSeconds, exercise.Weight, exercise.Notes, exercise.OrderIndex).Scan(&exercise.ID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return workout, nil
+	return nil
 }
 
-func (pws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
+func (ws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
 	workout := &Workout{}
 
 	workoutQuery := `
@@ -99,7 +98,13 @@ func (pws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
 		WHERE id = $1
 	`
 
-	err := pws.db.QueryRow(workoutQuery, id).Scan(&workout.ID, &workout.Name, &workout.Description, &workout.DurationMinutes, &workout.CaloriesBurned)
+	err := ws.db.QueryRow(workoutQuery, id).Scan(
+		&workout.ID,
+		&workout.Name,
+		&workout.Description,
+		&workout.DurationMinutes,
+		&workout.CaloriesBurned,
+	)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -114,7 +119,7 @@ func (pws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
 		ORDER BY order_index
 	`
 
-	rows, err := pws.db.Query(exerciseQuery, id)
+	rows, err := ws.db.Query(exerciseQuery, id)
 	if err != nil {
 		return nil, err
 	}
@@ -136,8 +141,8 @@ func (pws *PostgresWorkoutStore) GetWorkout(id int64) (*Workout, error) {
 	return workout, nil
 }
 
-func (pws *PostgresWorkoutStore) UpdateWorkout(workout *Workout) error {
-	tx, err := pws.db.Begin()
+func (ws *PostgresWorkoutStore) UpdateWorkout(workout *Workout) error {
+	tx, err := ws.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -189,10 +194,10 @@ func (pws *PostgresWorkoutStore) UpdateWorkout(workout *Workout) error {
 	return tx.Commit()
 }
 
-func (pws *PostgresWorkoutStore) DeleteWorkout(id int64) error {
+func (ws *PostgresWorkoutStore) DeleteWorkout(id int64) error {
 	query := `DELETE FROM workouts WHERE id = $1`
 
-	result, err := pws.db.Exec(query, id)
+	result, err := ws.db.Exec(query, id)
 	if err != nil {
 		return err
 	}

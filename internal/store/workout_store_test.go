@@ -100,7 +100,7 @@ func TestPersistWorkout(t *testing.T) {
 	// act & assert
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			persistedWorkout, err := store.PersistWorkout(tc.workout)
+			err := store.PersistWorkout(tc.workout)
 			if tc.expectsErr {
 				// We should match the expected error instead
 				assert.Error(t, err)
@@ -108,25 +108,25 @@ func TestPersistWorkout(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.workout.Name, persistedWorkout.Name)
-			assert.Equal(t, tc.workout.Description, persistedWorkout.Description)
-			assert.Equal(t, tc.workout.DurationMinutes, persistedWorkout.DurationMinutes)
-			assert.Equal(t, tc.workout.CaloriesBurned, persistedWorkout.CaloriesBurned)
-			assert.Equal(t, len(tc.workout.Exercises), len(persistedWorkout.Exercises))
-			for i := range persistedWorkout.Exercises {
-				assert.Equal(t, tc.workout.Exercises[i].Name, (&persistedWorkout.Exercises[i]).Name)
-				assert.Equal(t, tc.workout.Exercises[i].Sets, (&persistedWorkout.Exercises[i]).Sets)
-				assert.Equal(t, tc.workout.Exercises[i].Reps, (&persistedWorkout.Exercises[i]).Reps)
-				assert.Equal(t, tc.workout.Exercises[i].DurationSeconds, (&persistedWorkout.Exercises[i]).DurationSeconds)
-				assert.Equal(t, tc.workout.Exercises[i].Weight, (&persistedWorkout.Exercises[i]).Weight)
-				assert.Equal(t, tc.workout.Exercises[i].Notes, (&persistedWorkout.Exercises[i]).Notes)
-				assert.Equal(t, tc.workout.Exercises[i].OrderIndex, (&persistedWorkout.Exercises[i]).OrderIndex)
+			assert.Equal(t, tc.workout.Name, tc.workout.Name)
+			assert.Equal(t, tc.workout.Description, tc.workout.Description)
+			assert.Equal(t, tc.workout.DurationMinutes, tc.workout.DurationMinutes)
+			assert.Equal(t, tc.workout.CaloriesBurned, tc.workout.CaloriesBurned)
+			assert.Equal(t, len(tc.workout.Exercises), len(tc.workout.Exercises))
+			for i := range tc.workout.Exercises {
+				assert.Equal(t, tc.workout.Exercises[i].Name, (&tc.workout.Exercises[i]).Name)
+				assert.Equal(t, tc.workout.Exercises[i].Sets, (&tc.workout.Exercises[i]).Sets)
+				assert.Equal(t, tc.workout.Exercises[i].Reps, (&tc.workout.Exercises[i]).Reps)
+				assert.Equal(t, tc.workout.Exercises[i].DurationSeconds, (&tc.workout.Exercises[i]).DurationSeconds)
+				assert.Equal(t, tc.workout.Exercises[i].Weight, (&tc.workout.Exercises[i]).Weight)
+				assert.Equal(t, tc.workout.Exercises[i].Notes, (&tc.workout.Exercises[i]).Notes)
+				assert.Equal(t, tc.workout.Exercises[i].OrderIndex, (&tc.workout.Exercises[i]).OrderIndex)
 			}
 
-			retrievedWorkout, err := store.GetWorkout(int64(persistedWorkout.ID))
+			retrievedWorkout, err := store.GetWorkout(int64(tc.workout.ID))
 			require.NoError(t, err)
 
-			assert.Equal(t, persistedWorkout.ID, retrievedWorkout.ID)
+			assert.Equal(t, tc.workout.ID, retrievedWorkout.ID)
 			assert.Equal(t, len(tc.workout.Exercises), len(retrievedWorkout.Exercises))
 		})
 	}

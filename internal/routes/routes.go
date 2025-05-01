@@ -9,6 +9,10 @@ func MakeRouter(app *app.App) (r *chi.Mux) {
 	r = chi.NewRouter()
 
 	r.Get("/poke", app.HealthCheck)
+
+	r.Get("/users/{userId}", app.UserHandler.GetUser)
+	r.Post("/users", app.UserHandler.RegisterUser)
+
 	r.Get("/workouts/{workoutId}", app.WorkoutHandler.GetWorkout)
 	r.Post("/workouts", app.WorkoutHandler.CreateWorkout)
 	r.Put("/workouts/{workoutId}", app.WorkoutHandler.UpdateWorkout)
